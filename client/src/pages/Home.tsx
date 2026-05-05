@@ -17,6 +17,7 @@ import { Menu, X, ChevronRight, TrendingDown, TrendingUp, AlertTriangle, CheckCi
 const NAV_ITEMS = [
   { id: "summary",     label: "Summary" },
   { id: "findings",    label: "PoC Findings" },
+  { id: "knowledge",   label: "Knowledge Graph" },
   { id: "financials",  label: "Financials" },
   { id: "roadmap",     label: "Roadmap" },
   { id: "risks",       label: "Risks" },
@@ -34,6 +35,7 @@ const FILTER_OPTIONS = [
 const SECTION_TAGS: Record<string, string[]> = {
   summary:        ["all", "efficiency", "cost"],
   findings:       ["all", "efficiency"],
+  knowledge:      ["all", "action", "risk"],
   financials:     ["all", "cost"],
   roadmap:        ["all", "action"],
   risks:          ["all", "risk"],
@@ -590,6 +592,144 @@ export default function Home() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            SECTION 2b — Knowledge Graph: Greenfield vs Brownfield
+        ══════════════════════════════════════════════════════════════════ */}
+        <section
+          id="knowledge"
+          className={`bg-white border-t border-gray-100 transition-all duration-500 ${isVisible("knowledge") ? "opacity-100" : "opacity-30 pointer-events-none"}`}
+        >
+          <div className="container py-16">
+            <span className="section-rule" />
+            <div className="grid lg:grid-cols-3 gap-12 items-start mb-12">
+              <div className="lg:col-span-2">
+                <h2 className="text-3xl font-bold text-[#003087] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Knowledge Graph: Greenfield vs Brownfield</h2>
+                <p className="text-gray-600 text-base leading-relaxed mb-4">
+                  The most important strategic distinction in AI-assisted development is not which platform you choose — it is whether the platform's Knowledge Graph reflects <strong className="text-[#003087]">your context</strong>. The Parks team PoC succeeded on a greenfield project precisely because 8090 built its Knowledge Graph in real time, ingesting every requirement, blueprint, and work order as the project was created. Brownfield is the harder, more valuable problem.
+                </p>
+                <p className="text-gray-600 text-base leading-relaxed">
+                  No vendor's pre-built Knowledge Base can substitute for NRMA-specific context. What makes 8090 genuinely useful on our legacy systems is not generic software patterns — the foundation model already knows those. It is the accumulated, undocumented institutional knowledge of how our systems are structured, why architectural decisions were made, and how our domain language maps to our codebase.
+                </p>
+              </div>
+              <div className="bg-[#003087] text-white rounded-lg p-6">
+                <div className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-3">Strategic Asset</div>
+                <p className="text-blue-100 text-sm leading-relaxed">
+                  The $174k Phase 1 investment creates a <strong className="text-white">permanent, proprietary NRMA Knowledge Graph</strong> that compounds in value over time — de-risking onboarding, reducing bus-factor dependency, and accelerating every future project regardless of which AI platform is used in 3 years.
+                </p>
+              </div>
+            </div>
+
+            {/* Greenfield vs Brownfield comparison */}
+            <div className="grid lg:grid-cols-2 gap-8 mb-12">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center">
+                    <CheckCircle2 size={16} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-green-600 uppercase tracking-widest">Parks Team PoC — Proven</div>
+                    <h3 className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Playfair Display', serif" }}>Greenfield</h3>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    ["KG construction", "Built in real time alongside the project"],
+                    ["Context accuracy", "100% — every decision captured as it is made"],
+                    ["Time to productivity", "Immediate — no pre-work required"],
+                    ["PoC result", "70% requirements saving, 5–10× story throughput"],
+                    ["Risk", "Low — context is complete and current"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 shrink-0" />
+                      <div>
+                        <span className="text-xs font-bold text-green-700 uppercase tracking-wide">{label}: </span>
+                        <span className="text-sm text-gray-600">{value}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-amber-500 rounded flex items-center justify-center">
+                    <Clock size={16} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-amber-600 uppercase tracking-widest">Phase 1 — 6 Months Required</div>
+                    <h3 className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Playfair Display', serif" }}>Brownfield (Legacy)</h3>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    ["KG construction", "Retroactive ingestion — guided by Architect + Senior Dev"],
+                    ["Context accuracy", "Requires human validation of implicit decisions"],
+                    ["Time to productivity", "6 months to build KG before full SDLC use"],
+                    ["What must be captured", "System structure, domain language, tech debt patterns, coupling"],
+                    ["Risk", "Medium — managed via structured ingestion process"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 shrink-0" />
+                      <div>
+                        <span className="text-xs font-bold text-amber-700 uppercase tracking-wide">{label}: </span>
+                        <span className="text-sm text-gray-600">{value}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Vendor KB callout */}
+            <div className="bg-[#f7f9fc] border border-gray-200 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-bold text-[#003087] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Why Vendor-Supplied Knowledge Bases Are Insufficient</h3>
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                    Some vendors (including those using Amazon Q as a foundation) offer pre-built Knowledge Bases as part of their service proposition. While this may appear to accelerate onboarding, it fundamentally misunderstands the source of value in a Knowledge Graph.
+                  </p>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    A vendor's KB reflects their previous clients' patterns, generic industry conventions, and their own consulting methodology. It does not — and cannot — contain the context that makes AI genuinely useful on NRMA's systems.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { label: "What a vendor KB contains", items: ["Generic software patterns (already in the foundation model)", "Previous clients' architectural conventions", "Vendor's own consulting methodology"], color: "text-red-500", dot: "bg-red-400" },
+                    { label: "What NRMA's KG must contain", items: ["NRMA-specific domain language and system topology", "Legacy architectural decisions and their rationale", "Team conventions, naming standards, test patterns", "Coupling between Parks, payments, and membership systems"], color: "text-green-600", dot: "bg-green-500" },
+                  ].map((group) => (
+                    <div key={group.label}>
+                      <div className={`text-xs font-bold uppercase tracking-wide mb-2 ${group.color}`}>{group.label}</div>
+                      <div className="space-y-1">
+                        {group.items.map((item) => (
+                          <div key={item} className="flex items-start gap-2">
+                            <div className={`w-1.5 h-1.5 rounded-full ${group.dot} mt-1.5 shrink-0`} />
+                            <span className="text-xs text-gray-600">{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* KG as a permanent asset */}
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { icon: "🏗", title: "De-risks Onboarding", body: "New engineers and AI agents alike can query the KG to understand system context, reducing ramp-up time from months to days." },
+                { icon: "🧠", title: "Reduces Bus-Factor Risk", body: "Tribal knowledge held by senior engineers is externalised into a queryable, persistent asset that survives personnel changes." },
+                { icon: "🔄", title: "Platform-Agnostic Value", body: "The KG is an NRMA asset, not an 8090 asset. If the platform changes in 3 years, the structured knowledge remains and can be migrated." },
+              ].map((card) => (
+                <div key={card.title} className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                  <div className="text-2xl mb-3">{card.icon}</div>
+                  <h4 className="font-bold text-[#003087] text-sm mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>{card.title}</h4>
+                  <p className="text-gray-500 text-sm leading-relaxed">{card.body}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
