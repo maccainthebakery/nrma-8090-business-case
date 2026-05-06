@@ -165,7 +165,7 @@ const risks = [
     severity: "low",
     title: "No UX Prototyping Tool",
     description: "8090 has no built-in prototyping or design tool. The PoC used Figma Make, Vercel, and Abacus.ai as external tools, adding workflow complexity.",
-    mitigation: "Standardise on Abacus.ai as the prototype tool for PoC outputs. This workflow is already proven by the Parks team.",
+    mitigation: "Standardise on Abacus.ai as the prototype tool for PoC outputs. This workflow is already proven in the PoC.",
     icon: CheckCircle2,
   },
 ];
@@ -337,14 +337,14 @@ export default function Home() {
             <div className="container py-16 lg:py-20">
               <div className="grid lg:grid-cols-3 gap-10 items-start">
                 <div className="lg:col-span-2">
-                  <div className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-4">Parks Team · 6-Week PoC · May 2026</div>
+                  <div className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-4">10-Person Delivery Team · 6-Week PoC · May 2026</div>
                   <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-5" style={{ fontFamily: "'Playfair Display', serif" }}>
                     8090 Software Factory:<br />
                     <span className="text-blue-200">A Business Case for</span><br />
                     Accelerated Delivery
                   </h1>
                   <p className="text-blue-100 text-lg leading-relaxed max-w-xl">
-                    Following a 6-week Proof of Concept, the NRMA Parks team has validated transformative productivity gains across the SDLC. This document presents the financial case for full adoption, including a 6-month Knowledge Graph build for legacy codebase compatibility.
+                    Following a 6-week Proof of Concept with a 10-person NRMA delivery team, we have validated transformative productivity gains across the SDLC. This document presents the financial case for full adoption, including a 6-month Knowledge Graph build for legacy codebase compatibility.
                   </p>
                   <div className="flex flex-wrap gap-3 mt-7">
                     <button onClick={() => scrollTo("findings")} className="bg-white text-[#003087] text-sm font-bold px-5 py-2.5 rounded hover:bg-blue-50 transition-colors">
@@ -386,7 +386,7 @@ export default function Home() {
                     The 8090 Software Factory platform operates as a Layer 3 SDLC orchestration tool — maintaining a living Knowledge Graph that connects requirements (Refinery), architecture (Foundry), planning (Planner), and testing (Validator). This is fundamentally different from Layer 2 coding assistants such as GitHub Copilot.
                   </p>
                   <p className="text-gray-700 text-base leading-relaxed mb-4">
-                    The Parks team's 6-week PoC, conducted on a greenfield "Holiday Parks Trip Planner" project, confirmed a <strong className="text-[#003087]">70% reduction in requirements effort</strong> and a <strong className="text-[#003087]">5–10× increase in story throughput</strong> during the architecture and planning phases. The Validator (testing) module remains under evaluation.
+                    The 6-week PoC, conducted on a greenfield project, confirmed a <strong className="text-[#003087]">70% reduction in requirements effort</strong> and a <strong className="text-[#003087]">5–10× increase in story throughput</strong> during the architecture and planning phases. The Validator (testing) module remains under evaluation.
                   </p>
                   <p className="text-gray-700 text-base leading-relaxed">
                     The total platform cost (seat licenses plus token consumption) represents approximately <strong className="text-[#003087]">2.1% of the fully loaded FTE cost</strong> for a 10-person delivery team. A 6-month Knowledge Graph build for legacy codebase compatibility is a confirmed prerequisite, costing ~$174k AUD, after which a moderate FTE reduction of 3 headcount yields a net annual saving of $604k AUD and a 3-year net saving of $1.67M AUD.
@@ -436,7 +436,7 @@ export default function Home() {
               <div className="lg:col-span-2">
                 <h2 className="text-3xl font-bold text-[#003087] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>PoC Findings</h2>
                 <p className="text-gray-600 text-base leading-relaxed">
-                  The Parks team evaluated 8090 across its four core modules over 6 weeks, using a "Holiday Parks Trip Planner" as the test project. The following findings are drawn directly from the official PoC report.
+                  The team evaluated 8090 across its four core modules over 6 weeks on a greenfield project. The following findings are drawn directly from the official PoC report.
                 </p>
               </div>
               <div className="bg-white border border-gray-200 rounded p-5 shadow-sm">
@@ -551,7 +551,7 @@ export default function Home() {
               {/* Requirements time comparison */}
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h4 className="text-base font-bold text-[#003087] mb-1">Requirements Time: Before vs After</h4>
-                <p className="text-xs text-gray-500 mb-5">Mid-sized project — Parks Team PoC (working days)</p>
+                <p className="text-xs text-gray-500 mb-5">Mid-sized project — NRMA PoC (working days)</p>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={reqTimeData} barSize={60}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -609,7 +609,7 @@ export default function Home() {
               <div className="lg:col-span-2">
                 <h2 className="text-3xl font-bold text-[#003087] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Knowledge Graph: Greenfield vs Brownfield</h2>
                 <p className="text-gray-600 text-base leading-relaxed mb-4">
-                  The most important strategic distinction in AI-assisted development is not which platform you choose — it is whether the platform's Knowledge Graph reflects <strong className="text-[#003087]">your context</strong>. The Parks team PoC succeeded on a greenfield project precisely because 8090 built its Knowledge Graph in real time, ingesting every requirement, blueprint, and work order as the project was created. Brownfield is the harder, more valuable problem.
+                  The most important strategic distinction in AI-assisted development is not which platform you choose — it is whether the platform's Knowledge Graph reflects <strong className="text-[#003087]">your context</strong>. The PoC succeeded on a greenfield project precisely because 8090 built its Knowledge Graph in real time, ingesting every requirement, blueprint, and work order as the project was created. Brownfield is the harder, more valuable problem.
                 </p>
                 <p className="text-gray-600 text-base leading-relaxed">
                   No vendor's pre-built Knowledge Base can substitute for NRMA-specific context. What makes 8090 genuinely useful on our legacy systems is not generic software patterns — the foundation model already knows those. It is the accumulated, undocumented institutional knowledge of how our systems are structured, why architectural decisions were made, and how our domain language maps to our codebase.
@@ -631,7 +631,7 @@ export default function Home() {
                     <CheckCircle2 size={16} className="text-white" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-green-600 uppercase tracking-widest">Parks Team PoC — Proven</div>
+                    <div className="text-xs font-bold text-green-600 uppercase tracking-widest">NRMA PoC — Proven</div>
                     <h3 className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Playfair Display', serif" }}>Greenfield</h3>
                   </div>
                 </div>
@@ -699,7 +699,7 @@ export default function Home() {
                 <div className="space-y-3">
                   {[
                     { label: "What a vendor KB contains", items: ["Generic software patterns (already in the foundation model)", "Previous clients' architectural conventions", "Vendor's own consulting methodology"], color: "text-red-500", dot: "bg-red-400" },
-                    { label: "What NRMA's KG must contain", items: ["NRMA-specific domain language and system topology", "Legacy architectural decisions and their rationale", "Team conventions, naming standards, test patterns", "Coupling between Parks, payments, and membership systems"], color: "text-green-600", dot: "bg-green-500" },
+                    { label: "What NRMA's KG must contain", items: ["NRMA-specific domain language and system topology", "Legacy architectural decisions and their rationale", "Team conventions, naming standards, test patterns", "Coupling between business platforms, payments and membership systems"], color: "text-green-600", dot: "bg-green-500" },
                   ].map((group) => (
                     <div key={group.label}>
                       <div className={`text-xs font-bold uppercase tracking-wide mb-2 ${group.color}`}>{group.label}</div>
@@ -1078,7 +1078,7 @@ export default function Home() {
             <span className="block w-12 h-0.5 bg-blue-400 mb-5" />
             <h2 className="text-3xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Strategic Recommendation</h2>
             <p className="text-blue-200 text-base mb-12 max-w-2xl">
-              Based on the Parks team's PoC findings and the financial modelling presented in this document, we recommend the following three actions.
+              Based on the PoC findings and the financial modelling presented in this document, we recommend the following three actions.
             </p>
 
             <div className="grid lg:grid-cols-3 gap-6 mb-12">
@@ -1098,7 +1098,7 @@ export default function Home() {
                 {
                   num: "03",
                   title: "Transition to 7-FTE Model at Month 7",
-                  body: "Upon completion of the Knowledge Graph build, transition the Parks team to the 7-FTE optimised structure. This realises a net annual saving of $604k AUD while maintaining current delivery velocity.",
+                  body: "Upon completion of the Knowledge Graph build, transition to the 7-FTE optimised structure. This realises a net annual saving of $604k AUD while maintaining current delivery velocity.",
                   action: "Plan FTE transition",
                 },
               ].map((rec, i) => (
@@ -1139,7 +1139,7 @@ export default function Home() {
           <div className="container py-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <div className="text-[#003087] font-bold text-sm mb-1" style={{ fontFamily: "'Source Sans 3', sans-serif" }}>NRMA Parks Team · 8090 PoC Business Case</div>
+                <div className="text-[#003087] font-bold text-sm mb-1" style={{ fontFamily: "'Source Sans 3', sans-serif" }}>NRMA Technology · 8090 PoC Business Case</div>
                 <div className="text-gray-400 text-xs">Prepared for CTO presentation · May 2026 · All figures AUD · FTE costs fully loaded at ×1.45</div>
               </div>
               <div className="text-xs text-gray-400 text-right">
