@@ -5,12 +5,13 @@
  * Layout: Sticky nav + scroll-spy + filter chips + asymmetric 2/3+1/3 sections
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend, ReferenceLine, ReferenceArea, Cell
 } from "recharts";
 import { Menu, X, ChevronRight, TrendingDown, TrendingUp, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -188,13 +189,76 @@ const CustomTooltip = ({ active, payload, label, prefix = "", suffix = "" }: any
   return null;
 };
 
+// ─── Financial Model Calculator ─────────────────────────────────────────────
+function calcFinancials(seats: number) {
+  const SEAT_COST_AUD_PM = 200 / 0.65;          // ~$307.69 AUD/seat/month
+  const TOKEN_COST_AUD_PM_PER_SEAT = 37.50;     // mid scenario
+  const KG_BUILD = 174_000;                      // fixed regardless of team size
+  const FTE_COST_AVG = 211_700;                  // loaded AUD/yr per person
+  const FTE_REDUCTION = 0.30;                    // 30% headcount reduction
+
+  const fteCostYr = seats * FTE_COST_AVG;
+  const seatCostYr = seats * SEAT_COST_AUD_PM * 12;
+  const tokenCostYr = seats * TOKEN_COST_AUD_PM_PER_SEAT * 12;
+  const platformCostYr = seatCostYr + tokenCostYr;
+  const platformPct = (platformCostYr / fteCostYr) * 100;
+
+  const fteSaved = Math.round(seats * FTE_REDUCTION);
+  const annualFteSaving = fteSaved * FTE_COST_AVG;
+  const netAnnualSaving = annualFteSaving - platformCostYr;
+  const monthlyNet = netAnnualSaving / 12;
+  const breakeven = monthlyNet > 0 ? Math.ceil(KG_BUILD / monthlyNet) : 999;
+
+  const statusQuo3yr = fteCostYr * 3;
+  const reducedFteYr = (seats - fteSaved) * FTE_COST_AVG;
+  const yr1 = KG_BUILD + (reducedFteYr / 2) + (fteCostYr / 2) + platformCostYr;
+  const yr2 = reducedFteYr + platformCostYr;
+  const yr3 = reducedFteYr + platformCostYr;
+  const total8090 = yr1 + yr2 + yr3;
+  const netSaving3yr = statusQuo3yr - total8090;
+
+  // Cumulative 36-month data
+  const cumData = Array.from({ length: 36 }, (_, i) => {
+    const m = i + 1;
+    const sq = (fteCostYr / 12) * m;
+    let cum8090 = 0;
+    for (let j = 1; j <= m; j++) {
+      if (j <= 6) {
+        cum8090 += (fteCostYr / 12) + (platformCostYr / 12) + (KG_BUILD / 6);
+      } else {
+        cum8090 += (reducedFteYr / 12) + (platformCostYr / 12);
+      }
+    }
+    return { month: m, statusQuo: Math.round(sq / 1000), with8090: Math.round(cum8090 / 1000) };
+  });
+
+  // Annual bar data
+  const annualBarData = [
+    { name: "Status Quo", fte: Math.round(fteCostYr / 1000), platform: 0 },
+    { name: `Conservative\n(${seats - Math.round(seats*0.1)} FTE)`, fte: Math.round((seats - Math.round(seats*0.1)) * FTE_COST_AVG / 1000), platform: Math.round(platformCostYr / 1000) },
+    { name: `Moderate\n(${seats - fteSaved} FTE)`, fte: Math.round(reducedFteYr / 1000), platform: Math.round(platformCostYr / 1000) },
+    { name: `Aggressive\n(${seats - Math.round(seats*0.4)} FTE)`, fte: Math.round((seats - Math.round(seats*0.4)) * FTE_COST_AVG / 1000), platform: Math.round(platformCostYr / 1000) },
+  ];
+
+  return {
+    seats, fteCostYr, seatCostYr, tokenCostYr, platformCostYr, platformPct,
+    fteSaved, annualFteSaving, netAnnualSaving, breakeven,
+    statusQuo3yr, netSaving3yr, yr1, yr2, yr3,
+    cumData, annualBarData,
+    KG_BUILD,
+  };
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("summary");
   const [activeFilter, setActiveFilter] = useState("all");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [seatCount, setSeatCount] = useState(10);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  const fin = useMemo(() => calcFinancials(seatCount), [seatCount]);
 
   // Scroll spy
   useEffect(() => {
@@ -743,18 +807,69 @@ export default function Home() {
         >
           <div className="container py-16">
             <span className="section-rule" />
-            <h2 className="text-3xl font-bold text-[#003087] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>Financial Model</h2>
-            <p className="text-gray-500 text-base mb-12 max-w-2xl">All figures in AUD. FTE costs are fully loaded (base salary × 1.45 oncost multiplier). Platform costs use mid-range token scenario. Exchange rate: 1 USD = 1.62 AUD.</p>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
+              <div>
+                <h2 className="text-3xl font-bold text-[#003087] mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>Financial Model</h2>
+                <p className="text-gray-500 text-sm max-w-xl">All figures in AUD. FTE costs fully loaded (base × 1.45). Platform uses mid-range token scenario. Exchange rate: 1 USD = 1.62 AUD.</p>
+              </div>
+            </div>
 
-            {/* Top stat row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            {/* ── SEAT SLIDER ── */}
+            <div className="bg-[#f0f4fa] border border-blue-100 rounded-xl p-6 mb-10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div>
+                  <div className="text-xs font-bold text-[#003087] uppercase tracking-widest mb-0.5">Team Size Modeller</div>
+                  <p className="text-gray-500 text-xs">Drag the slider to model different team sizes. KG build cost is fixed — savings scale with headcount.</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-4xl font-bold text-[#003087]" style={{ fontFamily: "'Playfair Display', serif" }}>{seatCount}</span>
+                  <span className="text-sm text-gray-500 leading-tight">seats<br />(users)</span>
+                </div>
+              </div>
+              <Slider
+                min={5}
+                max={50}
+                step={1}
+                value={[seatCount]}
+                onValueChange={([v]) => setSeatCount(v)}
+                className="mb-3"
+              />
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>5 seats</span>
+                <span className="text-[#003087] font-semibold">Current: {seatCount} seats</span>
+                <span>50 seats</span>
+              </div>
+            </div>
+
+            {/* Dynamic KPI strip */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
               {[
-                { value: "$2.12M", label: "Total FTE Cost", sub: "10-person team, loaded", color: "text-[#003087]" },
-                { value: "$44,945", label: "Platform Cost/yr", sub: "10 seats + mid tokens", color: "text-[#003087]" },
-                { value: "2.1%", label: "Platform vs FTE", sub: "Even at high usage: 2.4%", color: "text-[#FF6600]" },
-                { value: "$604k", label: "Annual Net Saving", sub: "Steady state, 7 FTE", color: "text-green-600" },
+                {
+                  value: `$${(fin.fteCostYr / 1_000_000).toFixed(2)}M`,
+                  label: "Total FTE Cost",
+                  sub: `${seatCount}-person team, loaded`,
+                  color: "text-[#003087]",
+                },
+                {
+                  value: `$${fin.platformCostYr.toLocaleString("en-AU", { maximumFractionDigits: 0 })}`,
+                  label: "Platform Cost/yr",
+                  sub: `${seatCount} seats + mid tokens`,
+                  color: "text-[#003087]",
+                },
+                {
+                  value: `${fin.platformPct.toFixed(1)}%`,
+                  label: "Platform vs FTE",
+                  sub: "Cost as % of loaded FTE",
+                  color: "text-[#FF6600]",
+                },
+                {
+                  value: `$${Math.round(fin.netAnnualSaving / 1000)}k`,
+                  label: "Annual Net Saving",
+                  sub: `Steady state, ${seatCount - fin.fteSaved} FTE`,
+                  color: "text-green-600",
+                },
               ].map((s, i) => (
-                <div key={i} className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm">
+                <div key={i} className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm transition-all duration-300">
                   <div className={`text-3xl lg:text-4xl font-bold leading-none mb-1 ${s.color}`} style={{ fontFamily: "'Playfair Display', serif" }}>{s.value}</div>
                   <div className="text-[#003087] text-xs font-bold uppercase tracking-wide">{s.label}</div>
                   <div className="text-gray-400 text-xs mt-0.5">{s.sub}</div>
@@ -762,83 +877,23 @@ export default function Home() {
               ))}
             </div>
 
-            {/* FTE cost table */}
-            <div className="grid lg:grid-cols-2 gap-10 mb-12">
-              <div>
-                <h3 className="text-lg font-bold text-[#003087] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>FTE Cost Baseline (10-Person Team)</h3>
-                <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Role</th>
-                        <th className="text-center">Count</th>
-                        <th className="text-right">Base Salary</th>
-                        <th className="text-right">Loaded Cost</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fteTableData.map((row, i) => (
-                        <tr key={i}>
-                          <td className="font-medium">{row.role}</td>
-                          <td className="text-center text-gray-500">{row.count}</td>
-                          <td className="text-right text-gray-500">{row.base}</td>
-                          <td className="text-right font-semibold text-[#003087]">{row.loaded}</td>
-                        </tr>
-                      ))}
-                      <tr className="highlight">
-                        <td className="font-bold">Total Team</td>
-                        <td className="text-center font-bold">10</td>
-                        <td className="text-right font-bold">$1,460,000</td>
-                        <td className="text-right font-bold">$2,117,000</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <p className="text-xs text-gray-400 mt-2">Oncost multiplier: 1.45× (super 12%, leave 13.2%, workers comp 1.75%, payroll tax ~5.45% NSW, overhead)</p>
-              </div>
-
-              {/* Token scenarios */}
-              <div>
-                <h3 className="text-lg font-bold text-[#003087] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Platform Cost — Token Scenarios</h3>
-                <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Scenario</th>
-                        <th>Tokens/Dev/Mo</th>
-                        <th className="text-right">Token Cost/yr</th>
-                        <th className="text-right">Total Platform</th>
-                        <th className="text-right">% of FTE</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tokenData.map((row, i) => (
-                        <tr key={i} className={row.highlight ? "highlight" : ""}>
-                          <td className="font-medium">{row.scenario}</td>
-                          <td className="text-gray-500">{row.tokens}</td>
-                          <td className="text-right text-gray-500">{row.tokenCost}</td>
-                          <td className="text-right font-semibold text-[#003087]">{row.total}</td>
-                          <td className="text-right font-bold text-[#FF6600]">{row.pct}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="mt-4 bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700 flex items-start gap-2">
-                  <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                  <span><strong>PoC flagged:</strong> MCP cache reads are the primary token cost driver. Governance required before executing large work orders.</span>
-                </div>
-              </div>
+            {/* Insight callout */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg px-5 py-3 mb-10 flex flex-wrap gap-6 text-sm">
+              <div><span className="text-gray-500">FTE reduction (30%): </span><strong className="text-[#003087]">{fin.fteSaved} FTE saved</strong></div>
+              <div><span className="text-gray-500">Annual FTE saving: </span><strong className="text-green-700">${fin.annualFteSaving.toLocaleString("en-AU", { maximumFractionDigits: 0 })}</strong></div>
+              <div><span className="text-gray-500">KG build cost (fixed): </span><strong className="text-amber-700">${fin.KG_BUILD.toLocaleString()}</strong></div>
+              <div><span className="text-gray-500">Breakeven: </span><strong className="text-[#003087]">Month {fin.breakeven}</strong></div>
+              <div><span className="text-gray-500">3-year net saving: </span><strong className="text-green-700">${(fin.netSaving3yr / 1_000_000).toFixed(2)}M</strong></div>
             </div>
 
             {/* Charts row */}
-            <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            <div className="grid lg:grid-cols-2 gap-8 mb-10">
               {/* Annual cost comparison */}
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h4 className="text-base font-bold text-[#003087] mb-1">Annual Cost by FTE Reduction Scenario</h4>
-                <p className="text-xs text-gray-500 mb-5">Steady state, mid token usage (AUD $000s)</p>
+                <p className="text-xs text-gray-500 mb-5">Steady state, mid token usage (AUD $000s) — {seatCount} seats</p>
                 <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={annualData} barGap={2} barSize={28}>
+                  <BarChart data={fin.annualBarData} barGap={2} barSize={28}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#64748b" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}k`} />
@@ -853,65 +908,115 @@ export default function Home() {
               {/* Cumulative cost */}
               <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h4 className="text-base font-bold text-[#003087] mb-1">Cumulative Cost Over 36 Months</h4>
-                <p className="text-xs text-gray-500 mb-5">Moderate scenario — 3 FTE reduction post KG build (AUD $000s)</p>
+                <p className="text-xs text-gray-500 mb-5">Moderate scenario — {fin.fteSaved} FTE reduction post KG build (AUD $000s)</p>
                 <ResponsiveContainer width="100%" height={260}>
-                  <LineChart data={cumulativeData}>
+                  <LineChart data={fin.cumData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false}
-                      tickFormatter={(v) => v === 6 ? "M6\n(KG)" : `M${v}`}
+                      tickFormatter={(v) => v === 6 ? "M6 (KG)" : `M${v}`}
                       ticks={[1, 6, 12, 18, 24, 30, 36]} />
                     <YAxis tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(1)}M`} />
                     <Tooltip content={<CustomTooltip prefix="$" suffix="k" />} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
                     <ReferenceArea x1={1} x2={6} fill="#fef3c7" fillOpacity={0.5} />
-                    <ReferenceLine x={7} stroke="#6366f1" strokeDasharray="4 3" label={{ value: "Breakeven M7", position: "top", fontSize: 10, fill: "#6366f1" }} />
+                    <ReferenceLine x={fin.breakeven} stroke="#6366f1" strokeDasharray="4 3"
+                      label={{ value: `Breakeven M${fin.breakeven}`, position: "top", fontSize: 10, fill: "#6366f1" }} />
                     <Line type="monotone" dataKey="statusQuo" name="Status Quo" stroke="#ef4444" strokeWidth={2.5} dot={false} />
                     <Line type="monotone" dataKey="with8090" name="With 8090" stroke="#003087" strokeWidth={2.5} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
                 <div className="mt-3 flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
                   <TrendingUp size={14} />
-                  <span><strong>$1.67M net saving</strong> over 3 years · Breakeven at Month 7</span>
+                  <span><strong>${(fin.netSaving3yr / 1_000_000).toFixed(2)}M net saving</strong> over 3 years · Breakeven at Month {fin.breakeven}</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Token scenarios table */}
+            <div className="mb-10">
+              <h3 className="text-lg font-bold text-[#003087] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Platform Cost — Token Scenarios ({seatCount} seats)</h3>
+              <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Scenario</th>
+                      <th>Tokens/Dev/Mo</th>
+                      <th className="text-right">Seat Cost/yr</th>
+                      <th className="text-right">Token Cost/yr</th>
+                      <th className="text-right">Total Platform</th>
+                      <th className="text-right">% of FTE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { scenario: "Conservative", tokens: "1.5M", tokenMult: 0.6 },
+                      { scenario: "Moderate (Expected)", tokens: "4.0M", tokenMult: 1.0, highlight: true },
+                      { scenario: "High (MCP-Heavy)", tokens: "8.0M", tokenMult: 2.0 },
+                    ].map((row) => {
+                      const sc = fin.seatCostYr;
+                      const tc = fin.tokenCostYr * row.tokenMult;
+                      const tot = sc + tc;
+                      const pct = (tot / fin.fteCostYr * 100).toFixed(1);
+                      return (
+                        <tr key={row.scenario} className={row.highlight ? "highlight" : ""}>
+                          <td className="font-medium">{row.scenario}</td>
+                          <td className="text-gray-500">{row.tokens}</td>
+                          <td className="text-right text-gray-500">${sc.toLocaleString("en-AU", { maximumFractionDigits: 0 })}</td>
+                          <td className="text-right text-gray-500">${tc.toLocaleString("en-AU", { maximumFractionDigits: 0 })}</td>
+                          <td className="text-right font-semibold text-[#003087]">${tot.toLocaleString("en-AU", { maximumFractionDigits: 0 })}</td>
+                          <td className="text-right font-bold text-[#FF6600]">{pct}%</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700 flex items-start gap-2">
+                <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+                <span><strong>PoC flagged:</strong> MCP cache reads are the primary token cost driver. Governance required before executing large work orders.</span>
               </div>
             </div>
 
             {/* 3-year TCO summary */}
             <div className="bg-[#f7f9fc] border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-[#003087] mb-5" style={{ fontFamily: "'Playfair Display', serif" }}>3-Year Total Cost of Ownership</h3>
+              <h3 className="text-lg font-bold text-[#003087] mb-5" style={{ fontFamily: "'Playfair Display', serif" }}>3-Year Total Cost of Ownership — {seatCount} Seats</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 {[
-                  { year: "Year 1", sq: "$2,117,000", w8090: "$1,655,655", note: "Includes 6-mo KG build + 7 FTE for 6 mo" },
-                  { year: "Year 2", sq: "$2,117,000", w8090: "$1,513,362", note: "7 FTE + platform (steady state)" },
-                  { year: "Year 3", sq: "$2,117,000", w8090: "$1,513,362", note: "7 FTE + platform (steady state)" },
+                  { year: "Year 1", sq: fin.statusQuo3yr / 3, w8090: fin.yr1, note: `Includes 6-mo KG build + ${seatCount - fin.fteSaved} FTE for 6 mo` },
+                  { year: "Year 2", sq: fin.statusQuo3yr / 3, w8090: fin.yr2, note: `${seatCount - fin.fteSaved} FTE + platform (steady state)` },
+                  { year: "Year 3", sq: fin.statusQuo3yr / 3, w8090: fin.yr3, note: `${seatCount - fin.fteSaved} FTE + platform (steady state)` },
                 ].map((row, i) => (
                   <div key={i} className="bg-white border border-gray-200 rounded p-4">
                     <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{row.year}</div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-500">Status Quo</span>
-                      <span className="text-sm font-semibold text-red-500">{row.sq}</span>
+                      <span className="text-sm font-semibold text-red-500">${row.sq.toLocaleString("en-AU", { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-500">With 8090</span>
-                      <span className="text-sm font-semibold text-[#003087]">{row.w8090}</span>
+                      <span className="text-sm font-semibold text-[#003087]">${row.w8090.toLocaleString("en-AU", { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div className="text-xs text-gray-400 border-t border-gray-100 pt-2 mt-2">{row.note}</div>
                   </div>
-                ))}
+                ))
+              }
               </div>
-              <div className="mt-5 grid md:grid-cols-2 gap-4">
-                <div className="bg-[#003087] text-white rounded p-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-blue-200 text-xs font-bold uppercase tracking-wider">3-Year Total — Status Quo</div>
-                    <div className="text-2xl font-bold mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>$6,351,000</div>
-                  </div>
+              <div className="mt-5 bg-green-50 border border-green-200 rounded-lg p-4 flex flex-wrap gap-6">
+                <div>
+                  <div className="text-xs text-gray-500 mb-0.5">3-Year Status Quo</div>
+                  <div className="text-xl font-bold text-red-500" style={{ fontFamily: "'Playfair Display', serif" }}>${(fin.statusQuo3yr / 1_000_000).toFixed(2)}M</div>
                 </div>
-                <div className="bg-green-600 text-white rounded p-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-green-100 text-xs font-bold uppercase tracking-wider">3-Year Net Saving with 8090</div>
-                    <div className="text-2xl font-bold mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>$1,668,621</div>
-                  </div>
-                  <TrendingUp size={32} className="text-green-200" />
+                <div>
+                  <div className="text-xs text-gray-500 mb-0.5">3-Year With 8090</div>
+                  <div className="text-xl font-bold text-[#003087]" style={{ fontFamily: "'Playfair Display', serif" }}>${((fin.yr1 + fin.yr2 + fin.yr3) / 1_000_000).toFixed(2)}M</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 mb-0.5">3-Year Net Saving</div>
+                  <div className="text-xl font-bold text-green-700" style={{ fontFamily: "'Playfair Display', serif" }}>${(fin.netSaving3yr / 1_000_000).toFixed(2)}M</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 mb-0.5">Breakeven</div>
+                  <div className="text-xl font-bold text-[#003087]" style={{ fontFamily: "'Playfair Display', serif" }}>Month {fin.breakeven}</div>
                 </div>
               </div>
             </div>
