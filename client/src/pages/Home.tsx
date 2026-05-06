@@ -93,38 +93,7 @@ const tokenData = [
   { scenario: "High (MCP-Heavy)", tokens: "8.0M", tokenCost: "$12,131", total: "$51,011", pct: "2.4%" },
 ];
 
-const roadmapPhases = [
-  {
-    phase: "Phase 1",
-    title: "Knowledge Graph Build",
-    duration: "Months 1–6",
-    cost: "$173,755",
-    color: "bg-amber-500",
-    items: [
-      "Ingest legacy codebase into 8090 Knowledge Graph",
-      "0.5 FTE Architect + 0.5 FTE Senior Dev dedicated",
-      "Elevated token budget for MCP cache reads",
-      "Token governance framework established",
-      "Onboarding & change management programme",
-    ],
-    status: "Investment",
-  },
-  {
-    phase: "Phase 2",
-    title: "Optimised Steady State",
-    duration: "Month 7 onwards",
-    cost: "$31,462/yr",
-    color: "bg-nrma-blue",
-    items: [
-      "Transition to 7-FTE optimised team structure",
-      "Full SDLC orchestration via 8090 (all modules)",
-      "Validator (testing) module fully validated",
-      "Net annual saving: $604k AUD",
-      "Breakeven achieved at Month 7",
-    ],
-    status: "Saving",
-  },
-];
+// roadmapPhases is now generated dynamically inside the component (see below)
 
 const risks = [
   {
@@ -1048,28 +1017,68 @@ export default function Home() {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8 mb-12">
-              {roadmapPhases.map((phase, i) => (
-                <div key={i} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                  <div className={`${i === 0 ? "bg-amber-500" : "bg-[#003087]"} text-white p-5`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-xs font-bold uppercase tracking-widest opacity-80">{phase.phase}</div>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${i === 0 ? "bg-amber-600 text-white" : "bg-blue-800 text-white"}`}>{phase.status}</span>
-                    </div>
-                    <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>{phase.title}</h3>
-                    <div className="text-sm opacity-80">{phase.duration} · {phase.cost}</div>
+              {/* Phase 1 — static */}
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                <div className="bg-amber-500 text-white p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-bold uppercase tracking-widest opacity-80">Phase 1</div>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-amber-600 text-white">Investment</span>
                   </div>
-                  <div className="p-5">
-                    <ul className="space-y-2">
-                      {phase.items.map((item, j) => (
-                        <li key={j} className="flex items-start gap-2.5 text-sm text-gray-600">
-                          <CheckCircle2 size={15} className={`mt-0.5 shrink-0 ${i === 0 ? "text-amber-500" : "text-[#003087]"}`} />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>Knowledge Graph Build</h3>
+                  <div className="text-sm opacity-80">Months 1–6 · $174,000 (one-off)</div>
                 </div>
-              ))}
+                <div className="p-5">
+                  <ul className="space-y-2">
+                    {[
+                      "Ingest legacy codebase into 8090 Knowledge Graph",
+                      "0.5 FTE Architect + 0.5 FTE Senior Dev dedicated",
+                      "Elevated token budget for MCP cache reads",
+                      "Token governance framework established",
+                      "Onboarding & change management programme",
+                    ].map((item, j) => (
+                      <li key={j} className="flex items-start gap-2.5 text-sm text-gray-600">
+                        <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-amber-500" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Phase 2 — dynamic, contextualised to seatCount */}
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                <div className="bg-[#003087] text-white p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-bold uppercase tracking-widest opacity-80">Phase 2</div>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-800 text-white">Saving</span>
+                  </div>
+                  <h3 className="text-xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>Optimised Steady State</h3>
+                  <div className="text-sm opacity-80">Month {fin.breakeven} onwards · ${Math.round(fin.platformCostYr).toLocaleString("en-AU")}/yr platform</div>
+                </div>
+                <div className="p-5">
+                  {/* Contextual callout */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-xs text-[#003087]">
+                    <strong>Based on {seatCount} seats:</strong> The team reduces from {seatCount} FTE to {seatCount - fin.fteSaved} FTE
+                    {" "}(saving {fin.fteSaved} role{fin.fteSaved !== 1 ? "s" : ""}) while maintaining current delivery velocity through 8090 orchestration.
+                    Platform cost of ${Math.round(fin.platformCostYr).toLocaleString("en-AU")}/yr represents just {fin.platformPct.toFixed(1)}% of the original FTE spend.
+                  </div>
+                  <ul className="space-y-2">
+                    {[
+                      `Transition from ${seatCount} FTE to ${seatCount - fin.fteSaved} FTE optimised structure`,
+                      "Full SDLC orchestration via 8090 (all modules)",
+                      "Validator (testing) module fully validated",
+                      `Net annual saving: $${Math.round(fin.netAnnualSaving / 1000)}k AUD`,
+                      `Breakeven achieved at Month ${fin.breakeven}`,
+                      `3-year net saving: $${(fin.netSaving3yr / 1_000_000).toFixed(2)}M AUD`,
+                    ].map((item, j) => (
+                      <li key={j} className="flex items-start gap-2.5 text-sm text-gray-600">
+                        <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-[#003087]" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Timeline */}
